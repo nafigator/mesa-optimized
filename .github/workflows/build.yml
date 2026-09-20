@@ -3,11 +3,12 @@ name: Build Mesa with optimizations
 on:
   release:
     types: [published]
-  workflow_dispatch: # For manual launch
+  workflow_dispatch:
 
 env:
   MESA_VERSION: '25.0.7'
   PACKAGE_VERSION: '25.0.7-2+deb13u1'
+  OPT_FLAGS: '-march=x86-64-v4 -mtune=znver4 -O3 -fno-plt -fomit-frame-pointer -falign-functions=32 -falign-loops=32 -falign-jumps=32'
 
 jobs:
   build-deb:
@@ -41,17 +42,37 @@ jobs:
       - name: Patch debian/rules with optimization flags
         run: |
           cd mesa-${{ env.MESA_VERSION }}
-          sed -i '/^override_dh_auto_configure:/i confflags += -Dc_args="-march=x86-64-v4 -mtune=znver4 -O3 -fno-plt -fomit-frame-pointer -falign-functions=32 -falign-loops=32 -falign-jumps=32" -Dcpp_args="-march=x86-64-v4 -mtune=znver4 -O3 -fno-plt -fomit-frame-pointer -falign-functions=32 -falign-loops=32 -falign-jumps=32"' debian/rules
+          sed -i '/^override_dh_auto_configure:/i confflags += -Dc_args="${{ env.OPT_FLAGS }}" -Dcpp_args="${{ env.OPT_FLAGS }}"' debian/rules
           grep -B 1 '^override_dh_auto_configure:' debian/rules
+
+      - name: Clean old artifacts
+        run: |
+          rm -rf packages
+          rm -f ../*.deb ../*.buildinfo ../*.changes
+          mkdir -p packages
 
       - name: Build .deb packages
         run: |
           cd mesa-${{ env.MESA_VERSION }}
           dh_clean
           rm -rf build obj-*
+          # noautodbgsym — don't make dbgsym-packages
+          # noddebs — don't make .ddeb
+          export DEB_BUILD_OPTIONS="noautodbgsym noddebs"
           dpkg-buildpackage -b -us -uc
-          mkdir -p ../packages
-          mv ../*.deb ../packages/ || true
+          find .. -maxdepth 1 -name '*.deb' \
+            ! -name '*dbgsym*' ! -name '*ddeb*' \
+            -exec mv {} ../packages/ \;
+
+      - name: Verify no dbgsym packages
+        run: |
+          cd mesa-${{ env.MESA_VERSION }}
+          if ls ../packages/*dbgsym* ../packages/*ddeb* 2>/dev/null; then
+            echo "ERROR: dbgsym/ddeb packages found!"
+            exit 1
+          fi
+          echo "OK: no dbgsym packages"
+          ls -lh ../packages/
 
       - name: Upload .deb packages as artifacts
         uses: actions/upload-artifact@v4
