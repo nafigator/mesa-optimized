@@ -41,8 +41,8 @@ jobs:
       - name: Patch debian/rules with optimization flags
         run: |
           cd mesa-${{ env.MESA_VERSION }}
-          sed -i '/^confflags += \\/,/^$/ s/^\(.*\)$/\1\n        -Dc_args="-march=x86-64-v4 -O3" \\\n        -Dcpp_args="-march=x86-64-v4 -O3"/' debian/rules
-          grep -A 20 'confflags +=' debian/rules
+          sed -i '/^override_dh_auto_configure:/i confflags += -Dc_args="-march=x86-64-v4 -mtune=znver4 -O3 -fno-plt -fomit-frame-pointer -falign-functions=32 -falign-loops=32 -falign-jumps=32" -Dcpp_args="-march=x86-64-v4 -mtune=znver4 -O3 -fno-plt -fomit-frame-pointer -falign-functions=32 -falign-loops=32 -falign-jumps=32"' debian/rules
+          grep -B 1 '^override_dh_auto_configure:' debian/rules
 
       - name: Build .deb packages
         run: |
