@@ -1,0 +1,85 @@
+name: Build Mesa with optimizations
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # For manual launch
+
+env:
+  MESA_VERSION: '25.0.7'
+  PACKAGE_VERSION: '25.0.7-2+deb13u1'
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    container:
+      image: devuan/devuan:excalibur
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt update
+          apt install -y --no-install-recommends \
+            build-essential devscripts equivs quilt ca-certificates
+
+      - name: Download Mesa source
+        run: |
+          echo "deb-src http://deb.devuan.org/merged excalibur main" >> /etc/apt/sources.list
+          apt update
+          apt source mesa-vulkan-drivers=${{ env.PACKAGE_VERSION }}
+
+      - name: Install build dependencies from control file
+        run: |
+          cd mesa-${{ env.MESA_VERSION }}
+          mk-build-deps --install --remove \
+            --tool 'apt-get -y --no-install-recommends' \
+            debian/control
+
+      - name: Apply Debian patches
+        run: |
+          cd mesa-${{ env.MESA_VERSION }}
+          export QUILT_PATCHES=debian/patches
+          quilt push -a
+
+      - name: Patch debian/rules with optimization flags
+        run: |
+          cd mesa-${{ env.MESA_VERSION }}
+          sed -i '/^confflags += \\/,/^$/ s/^\(.*\)$/\1\n        -Dc_args="-march=x86-64-v4 -O3" \\\n        -Dcpp_args="-march=x86-64-v4 -O3"/' debian/rules
+          grep -A 20 'confflags +=' debian/rules
+
+      - name: Build .deb packages
+        run: |
+          cd mesa-${{ env.MESA_VERSION }}
+          dh_clean
+          rm -rf build obj-*
+          dpkg-buildpackage -b -us -uc
+          mkdir -p ../packages
+          mv ../*.deb ../packages/ || true
+
+      - name: Upload .deb packages as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mesa-deb-packages
+          path: packages/*.deb
+          retention-days: 5
+
+  release:
+    needs: build-deb
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mesa-deb-packages
+          path: packages
+
+      - name: Upload .deb files to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: packages/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
