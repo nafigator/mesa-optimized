@@ -23,7 +23,7 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           apt update
           apt install -y --no-install-recommends \
-            build-essential devscripts equivs quilt ca-certificates
+            build-essential devscripts equivs ca-certificates
 
       - name: Download Mesa source
         run: |
@@ -37,12 +37,6 @@ jobs:
           mk-build-deps --install --remove \
             --tool 'apt-get -y --no-install-recommends' \
             debian/control
-
-      - name: Apply Debian patches
-        run: |
-          cd mesa-${{ env.MESA_VERSION }}
-          export QUILT_PATCHES=debian/patches
-          quilt push -a
 
       - name: Patch debian/rules with optimization flags
         run: |
