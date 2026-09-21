@@ -152,3 +152,13 @@ Source workflow: [`.github/workflows/build-mesa.yml`](.github/workflows/build-me
 - Packages are **not signed**. Verify integrity using SHA-256 from the release description.
 - **Do not install** these packages if you are unsure about AVX-512 support on your CPU.
 - The author is not responsible for any system issues. Always have a Live USB ready for recovery.
+
+## License
+
+The build scripts and GitHub Actions workflows in this repository
+are licensed under the MIT License. See LICENSE file.
+
+The Mesa source code and Debian packaging files are distributed
+under their respective licenses — see the mesa source package
+for details. The compiled .deb packages in Releases are
+redistributions of Mesa under its original license.
