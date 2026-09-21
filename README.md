@@ -10,7 +10,6 @@ Packages are built automatically via GitHub Actions inside a clean `devuan/devua
 - **Architecture:** amd64
 - **CPU:** with **AVX-512** support (x86-64-v4)
   - AMD Zen 4 (Ryzen 7000/8000/9000)
-  - Intel Skylake-X and newer
 - **GPU:** AMD (RDNA 1/2/3/4) — tested on Radeon 780M (Phoenix)
 
 **Packages will not run** on CPUs without AVX-512. Check support:
@@ -141,23 +140,15 @@ GitHub Actions workflow:
 3. Downloads `mesa-vulkan-drivers` source via `apt source`.
 4. Installs build dependencies via `mk-build-deps`.
 5. Applies Debian patches via `quilt push -a`.
-6. Adds `-Dc_args="-march=x86-64-v4 -O3"` and `-Dcpp_args="-march=x86-64-v4 -O3"` to `debian/rules`.
+6. Adds `-Dc_args="-march=x86-64-v4 -mtune=znver4 -O3 -fno-plt -fomit-frame-pointer -falign-functions=32 -falign-loops=32 -falign-jumps=32"` and `-Dcpp_args="-march=x86-64-v4 -mtune=znver4 -O3 -fno-plt -fomit-frame-pointer -falign-functions=32 -falign-loops=32 -falign-jumps=32"` to `debian/rules`.
 7. Builds packages via `dpkg-buildpackage -b -us -uc`.
 8. Uploads `.deb` files as artifacts and to the release.
 
 Source workflow: [`.github/workflows/build-mesa.yml`](.github/workflows/build-mesa.yml).
 
-## Updating Packages
-
-When a new Mesa version appears in Devuan repositories:
-
-1. Update the version in the workflow (`apt source mesa-vulkan-drivers=<new-version>`).
-2. Trigger the build via the **Actions** tab → **Run workflow**.
-3. After a successful build, create a new release — packages will be attached automatically.
-
 ## Important
 
-- Packages are built **only for Devuan Excalibur**. Installing on Daedalus (stable) or other releases may break graphics.
+- Packages are built **only for Devuan Excalibur**. Installing on Daedalus (oldstable) or other releases may break graphics.
 - Packages are **not signed**. Verify integrity using SHA-256 from the release description.
 - **Do not install** these packages if you are unsure about AVX-512 support on your CPU.
 - The author is not responsible for any system issues. Always have a Live USB ready for recovery.
