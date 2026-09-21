@@ -120,13 +120,13 @@ jobs:
           path: packages
 
       - name: Create release and upload packages
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.build-deb.outputs.tag }}
-          name: Mesa ${{ env.MESA_VERSION }} (${{ needs.build-deb.outputs.tag }})
-          generate_release_notes: true
-          files: packages/*.deb
-          fail_on_unmatched_files: true
-          make_latest: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.build-deb.outputs.tag }}
+        run: |
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Mesa ${MESA_VERSION} (${TAG})" \
+            --generate-notes \
+            --latest \
+            packages/*.deb
