@@ -124,9 +124,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.build-deb.outputs.tag }}
         run: |
-          gh release create "$TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "Mesa ${MESA_VERSION} (${TAG})" \
-            --generate-notes \
-            --latest \
-            packages/*.deb
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — uploading files"
+            gh release upload "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber \
+              packages/*.deb
+          else
+            echo "Creating release $TAG"
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Mesa ${MESA_VERSION} (${TAG})" \
+              --generate-notes \
+              --latest \
+              "$ARCHIVE"
+          fi
