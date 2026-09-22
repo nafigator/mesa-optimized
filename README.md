@@ -6,7 +6,7 @@ Packages are built automatically via GitHub Actions inside a clean `devuan/devua
 
 ## Requirements
 
-- **Distribution:** Devuan Excalibur (testing)
+- **Distribution:** Devuan Excalibur (stable)
 - **Architecture:** amd64
 - **CPU:** with **AVX-512** support (x86-64-v4)
   - AMD Zen 4 (Ryzen 7000/8000/9000)
@@ -43,10 +43,11 @@ Debug packages (`*-dbgsym`) are **not included** in releases — they do not aff
 
 ```bash
 mkdir -p ~/mesa-opt && cd ~/mesa-opt
-gh release download --repo <owner>/<repo> --pattern '*.deb'
+gh release download --repo nafigator/mesa-optimized --pattern '*.deb'
 ```
 
 Or download the `.deb` files manually from the [Releases](../../releases) page.
+You can exclude `*dev*` packages if you don't need them.
 
 ### 2. Back up current packages
 
