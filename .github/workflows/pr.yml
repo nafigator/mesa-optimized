@@ -1,0 +1,34 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: PR
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  spelling:
+    name: Spell Check with Typos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Actions Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Spell Check Repo
+        uses: crate-ci/typos@bee27e3a4fd1ea2111cf90ab89cd076c870fce14 # v1.48.0
+
+  commit-me:
+    name: Conventional Commits Compliance
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    env:
+      # Enable colored output in GitHub Actions
+      FORCE_COLOR: 3
+    steps:
+      - uses: dev-build-deploy/commit-me@27d14296ec218488c543616d9128d7e75ab7463a # v1.5.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Required to retrieve the commits associated with your Pull Request
+          include-commits: true  # OPTIONAL; forces the inclusion of commits associated with your Pull Request
