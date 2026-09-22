@@ -1,4 +1,4 @@
-# Mesa x86-64-v4 for Devuan Excalibur
+# Mesa x86-64-v4 for Devuan (stable)
 
 Optimized Mesa (video driver) packages for Devuan Excalibur, built with `-march=x86-64-v4 -O3`.
 
