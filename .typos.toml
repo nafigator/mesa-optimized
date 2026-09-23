@@ -38,3 +38,6 @@ extend-ignore-re = []
 
 [type.md.extend-identifiers]
 XvBA = "XvBA"
+
+[type.yaml.extend-identifiers]
+caf = "caf"

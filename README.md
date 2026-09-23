@@ -43,10 +43,10 @@ Debug packages (`*-dbgsym`) are **not included** in releases — they do not aff
 
 ```bash
 mkdir -p ~/mesa-opt && cd ~/mesa-opt
-gh release download --repo nafigator/mesa-optimized --pattern '*.deb'
+gh release download --repo nafigator/mesa-optimized --pattern '*.zst'
 ```
 
-Or download the `.deb` files manually from the [Releases](../../releases) page.
+Or download the `.zst` files manually from the [Releases](../../releases) page.
 You can exclude `*dev*` packages if you don't need them.
 
 ### 2. Back up current packages
@@ -59,8 +59,9 @@ sudo cp /var/cache/apt/archives/mesa-*.deb /root/mesa-backup/ 2>/dev/null || tru
 ### 3. Install
 
 ```bash
-cd ~/mesa-opt
-sudo apt install ./*.deb
+cd ~/mesa
+tar --zstd -xf mesa-*.tar.zst
+sudo apt install ./packages/*.deb
 ```
 
 The `./` prefix is required — otherwise `apt` will look for packages in repositories.
