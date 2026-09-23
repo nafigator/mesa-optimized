@@ -146,6 +146,6 @@ jobs:
               --repo "$GITHUB_REPOSITORY" \
               --title "Mesa ${MESA_VERSION} (${TAG})" \
               --generate-notes \
-              --draft
+              --latest
               ./*.zst
           fi
