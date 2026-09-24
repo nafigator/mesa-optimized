@@ -144,8 +144,7 @@ jobs:
             echo "Creating release $TAG"
             gh release create "$TAG" \
               --repo "$GITHUB_REPOSITORY" \
-              --title "Mesa ${MESA_VERSION} (${TAG})" \
-              --generate-notes \
+              --title "Mesa ${MESA_VERSION} (x86-64-v4) (${TAG})" \
               --latest \
               ./*.zst
           fi
